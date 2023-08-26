@@ -1,4 +1,6 @@
-from django.views.generic import CreateView, DeleteView
+from typing import Any
+from django.http import HttpRequest, HttpResponse
+from django.views.generic import CreateView, DeleteView, UpdateView
 from .models import Todo
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import TodoForm
@@ -21,3 +23,11 @@ class CreateTodoView(LoginRequiredMixin,CreateView):
 class DeleteTodoView(LoginRequiredMixin,DeleteView):
     model = Todo
     success_url = '/'
+    def get(self, request, *args, **kwargs):
+        return self.delete(request, *args, **kwargs)
+
+# ============= This class used for updating todos ============= #
+class UpdateTodoView(LoginRequiredMixin,UpdateView):
+    model = Todo
+    success_url = '/'
+    form_class = TodoForm

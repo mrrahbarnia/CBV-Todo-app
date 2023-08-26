@@ -4,7 +4,7 @@
 
 <!--=====================Block for title of the page=====================-->
 {% block title %}
-Todo list
+Todo edit
 {% endblock title %}
 
 <!--=====================Block for navbar-content=====================-->
@@ -23,36 +23,22 @@ Todo list
 
 <!--=====================Block for content of this page=====================-->
 {% block container %}
+<style>
+    body {
+        background-image: url("static/img/home.jpg");
+        background-position: center 0px;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    }
+</style>
 <div class="container mt-3" style="width: 95%; font-size: 14px;">
-    <form method="post" action="{% url 'todo-create' %}" autocomplete="off" novalidate>
+    <form method="post" action="{% url 'todo-edit' pk=object.id %}" autocomplete="off" novalidate>
         {% csrf_token %}
         <div class="col-6">
             {{ form.title|as_crispy_field }}
         </div>
-        <button class="btn btn-outline-light border-light btn-sm" style="width: 50%;">Add Task</button>
+        <button class="btn btn-outline-light border-dark btn-sm">Change Task</button>
     </form>
 </div>
-<br/>
-{% for i in todos %}
-<div class="container">
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="btn btn-outline-light border-light btn-sm mt-2">
-                <span>{{i}}</span>
-            </div>
-            <a href="{% url 'todo-edit' pk=i.id %}" class="btn btn-outline-light border-light btn-sm mt-2" id="btn-nav">
-                Edit
-            </a>
-            <a href="{% url 'todo-delete' pk=i.id %}" class="btn btn-outline-light border-light btn-sm mt-2" id="btn-nav">
-                Done
-            </a>
-        </div>
-    </div>
-</div>
-
-
-
-
-
-{% endfor %}
 {% endblock container %}
