@@ -23,15 +23,6 @@ Todo edit
 
 <!--=====================Block for content of this page=====================-->
 {% block container %}
-<style>
-    body {
-        background-image: url("static/img/home.jpg");
-        background-position: center 0px;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-size: cover;
-    }
-</style>
 <div class="container mt-3" style="width: 95%; font-size: 14px;">
     <form method="post" action="{% url 'todo-edit' pk=object.id %}" autocomplete="off" novalidate>
         {% csrf_token %}
