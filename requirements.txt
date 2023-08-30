@@ -1,0 +1,4 @@
+Django==3.2
+django-crispy-forms
+crispy-bootstrap5
+python-decouple

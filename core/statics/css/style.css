@@ -27,7 +27,9 @@ Footer
     height: 50px;
     font-size: 13px;
 }
-
+/* --------------------------------
+Background image
+-------------------------------- */
 #bg{
     background-size: cover;
     background-repeat: no-repeat;

@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./core:/app
+    command: python manage.py runserver 0.0.0.0:8000
+    container_name: backend
+    environment:
+      - SECRET_KEY='django-insecure-=)e5p&s%wij9s%=dkd3l0)vi^zcy7s-8@c)(l5&11nijse#^(!'
+      - DEBUG=False
