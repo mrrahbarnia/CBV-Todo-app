@@ -38,10 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Local
     'todo',
     'accounts',
+
+    # 3rd party
     'crispy_forms',
     "crispy_bootstrap5",
+    'rest_framework',
+    'django_filters',
 ]
 
 # Django-crispy-forms configuration

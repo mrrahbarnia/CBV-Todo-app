@@ -11,4 +11,4 @@ services:
     container_name: backend
     environment:
       - SECRET_KEY='django-insecure-=)e5p&s%wij9s%=dkd3l0)vi^zcy7s-8@c)(l5&11nijse#^(!'
-      - DEBUG=False
+      - DEBUG=True
