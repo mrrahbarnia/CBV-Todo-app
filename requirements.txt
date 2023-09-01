@@ -2,3 +2,6 @@ Django==3.2
 django-crispy-forms
 crispy-bootstrap5
 python-decouple
+djangorestframework
+markdown
+django-filter

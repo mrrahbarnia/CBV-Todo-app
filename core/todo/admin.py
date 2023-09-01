@@ -4,8 +4,8 @@ from .models import Todo
 # ============= This class specified how to show Todo model in admin panel ============= # 
 class TodoAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
-    list_display = ['user', 'title', 'created_at']
-    fields = ['user', 'title']
+    list_display = ['user', 'task', 'created_at']
+    fields = ['user', 'task']
 
 
 
