@@ -12,3 +12,19 @@ services:
     environment:
       - SECRET_KEY='django-insecure-=)e5p&s%wij9s%=dkd3l0)vi^zcy7s-8@c)(l5&11nijse#^(!'
       - DEBUG=True
+
+  smtp4dev:
+      image: rnwood/smtp4dev:v3
+      restart: always
+      ports:
+        - '5000:80'
+        - '25:25'
+        - '143:143'
+      volumes:
+        - smtp4dev-data:/smtp4dev
+      environment:
+        - ServerOptions__HostName=smtp4dev
+    
+    
+volumes:
+  smtp4dev-data:
