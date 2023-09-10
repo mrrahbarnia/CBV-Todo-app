@@ -1,5 +1,3 @@
-from typing import Any
-from django.http import HttpRequest, HttpResponse
 from django.views.generic import CreateView, DeleteView, UpdateView
 from .models import Todo
 from django.contrib.auth.mixins import LoginRequiredMixin
