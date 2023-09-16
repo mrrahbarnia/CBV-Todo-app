@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
+from django.contrib.sites.shortcuts import get_current_site
 
 from rest_framework import generics,status
 from rest_framework.views import APIView
@@ -13,15 +15,26 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import jwt
-from jwt.exceptions import InvalidSignatureError
+from jwt.exceptions import (
+    InvalidSignatureError,
+    ExpiredSignatureError
+)
 
 from mail_templated import EmailMessage
 from decouple import config
 
 from ..utils import EmailThread
 from .serializers import (
+<<<<<<< Updated upstream
 RegistrationSerializer,CustomTokenObtainSerializer,PasswordResetSerializer,
 ChangePasswordSerializer,PasswordResetDoneSerializer
+=======
+    RegistrationSerializer,
+    CustomTokenObtainSerializer,
+    PasswordResetSerializer,
+    ChangePasswordSerializer,
+    SetNewPasswordSerializer,
+>>>>>>> Stashed changes
 )
 
 User = get_user_model() # User model
@@ -82,17 +95,37 @@ class ChangePasswordGenericApiView(generics.GenericAPIView):
 class ResetPasswordGenericApiView(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
     def post(self, request, *args, **kwargs):
+<<<<<<< Updated upstream
         serializer = self.serializer_class(data=request.data,context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         message = EmailMessage('email/reset-password.tpl', {'user': user.username,'token':self.get_token_for_user(user)}, 'mrrahbarnia@gmail.com',
                        to=[user.email])
+=======
+        serializer = self.serializer_class(
+            data=request.data, context={"request": request}
+        )
+        current_site = get_current_site(request)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        token = self.get_token_for_user(user)
+        relative_link = reverse('accounts:api-v1:reset-password-checktoken',kwargs={'token':token})
+        message = EmailMessage(
+            "email/reset-password.tpl",
+            {"user": user.username,
+            "token": token,
+            "current_site": 'http://'+str(current_site)+str(relative_link)},
+            "mrrahbarnia@gmail.com",
+            to=[user.email],
+        )
+>>>>>>> Stashed changes
         EmailThread(message).start()
         return Response({"detail":"The verification email sent to {}".format(user.email)})
     def get_token_for_user(swlf,user):
         refresh = RefreshToken.for_user(user)
         return str(refresh)
 
+<<<<<<< Updated upstream
 class ResetPasswordConfirmationGenericApiView(generics.GenericAPIView):
     serializer_class = PasswordResetDoneSerializer
     def get_queryset(self):
@@ -118,3 +151,52 @@ class ResetPasswordConfirmationGenericApiView(generics.GenericAPIView):
         user.set_password(new_password)
         user.save()
         return Response({"detail":"Your password reseted successfully"})
+=======
+
+class ResetPasswordCheckTokenApiView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        token = self.request.parser_context.get("kwargs").get("token")
+        try:
+            jwt_token = jwt.decode(
+                token, config("SECRET_KEY"), algorithms=["HS256"]
+            )
+        except InvalidSignatureError:
+            return Response(
+                {
+                    "detail": "The token is not valid,please get a new link."
+                }
+            )
+        except ExpiredSignatureError:
+            return Response(
+                {
+                    "detail": "The token has been expired,please get a new link."
+                }
+            )
+        user = User.objects.filter(id=jwt_token.get("user_id")).first()
+        if not user:
+            return Response(
+                {"detail": "There isn't any user with this token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {"detail": "Token is valid",
+             "token":token},
+             status=status.HTTP_200_OK
+        )
+
+
+class SetNewPasswordGenericApiView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data,context={'request':request}
+        )
+        serializer.is_valid(raise_exception=True)
+        return Response(
+            {'detail':'The password has been changed successfully'},
+            status=status.HTTP_200_OK
+        )
+
+>>>>>>> Stashed changes

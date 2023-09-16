@@ -1,12 +1,19 @@
 from django.core import exceptions
 import django.contrib.auth.password_validation as validators
-from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-User = get_user_model()
+import jwt
+from jwt.exceptions import (
+    InvalidSignatureError,
+    ExpiredSignatureError
+)
+
+from decouple import config
+
+from django.contrib.auth.models import User
 
 # ============= Serializer for registration by getting username,password and confirmation password ============= #
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -76,21 +83,61 @@ class ChangePasswordSerializer(serializers.Serializer):
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
     def validate(self, attrs):
+<<<<<<< Updated upstream
         email = attrs.get('email')
         user = User.objects.filter(email=email).first()
         if user:
             validated_data = super().validate(attrs)
             validated_data['user'] = user
+=======
+        validated_data = super().validate(attrs)
+        email = attrs.get("email",None)
+        user = User.objects.filter(email=email).first()
+        if user:
+            validated_data["user"] = user
+>>>>>>> Stashed changes
             return validated_data
         raise serializers.ValidationError({'email':"There isn't any active user with this email address. "})
 
 
-class PasswordResetDoneSerializer(serializers.Serializer):
+class SetNewPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
+<<<<<<< Updated upstream
     new_password1 = serializers.CharField(required=True,write_only=True)
     def validate(self, attrs):
         validated_data =  super().validate(attrs)
         if attrs.get('new_passowrd') != attrs.get('new_passowrd1'):
+=======
+    new_password1 = serializers.CharField(required=True, write_only=True)
+    token = serializers.CharField(required=True,write_only=True)
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        token = attrs.get('token')
+        try:
+
+            jwt_token = jwt.decode(
+                token, config("SECRET_KEY"), algorithms=["HS256"]
+            )
+        except InvalidSignatureError:
+            return serializers.ValidationError(
+                {
+                    "detail": "The token is not valid,please get a new link."
+                }
+            )
+        except ExpiredSignatureError:
+            return serializers.ValidationError(
+                {
+                    "detail": "The token has been expired,please get a new link."
+                }
+            )
+        user = User.objects.filter(id=jwt_token.get("user_id")).first()
+        if not user:
+            return serializers.ValidationError(
+                {"detail": "There isn't any user with this token."}
+            )
+        if attrs.get("new_passowrd") != attrs.get("new_passowrd1"):
+>>>>>>> Stashed changes
             raise serializers.ValidationError(
                 {'detail':'passwords doesnt match'}
             )
@@ -101,7 +148,13 @@ class PasswordResetDoneSerializer(serializers.Serializer):
             errors['new_passowrd']=list(e.messages)
         if errors:
             raise serializers.ValidationError(errors)
+<<<<<<< Updated upstream
         validated_data['new_passowrd'] = attrs.get('new_password')
+=======
+        new_password = attrs.get("new_password")
+        user.set_password(new_password)
+        user.save()
+>>>>>>> Stashed changes
         return validated_data
 
         

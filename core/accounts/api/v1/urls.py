@@ -26,6 +26,23 @@ urlpatterns = [
     # ============= Change Password ============= #
     path('change-password/',views.ChangePasswordGenericApiView.as_view(),name='change-password'),
     # ============= Reset Password ============= #
+<<<<<<< Updated upstream
     path('reset-password/',views.ResetPasswordGenericApiView.as_view(), name='password_reset'),
     path('reset-password/<str:token>',views.ResetPasswordConfirmationGenericApiView.as_view(), name='password_confirm'),
 ]
+=======
+    path(
+        "reset-password/",
+        views.ResetPasswordGenericApiView.as_view(),
+        name="reset-password",
+    ),
+    path(
+        "reset-password/<str:token>/",
+        views.ResetPasswordCheckTokenApiView.as_view(),
+        name="reset-password-checktoken",
+    ),
+    path("reset-password-complete/",
+        views.SetNewPasswordGenericApiView.as_view(),
+        name='reset-password-complete')
+]
+>>>>>>> Stashed changes
