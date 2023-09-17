@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -13,7 +15,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import jwt
-from jwt.exceptions import InvalidSignatureError
+from jwt.exceptions import (
+    InvalidSignatureError,
+    ExpiredSignatureError
+)
 
 from mail_templated import EmailMessage
 from decouple import config
@@ -24,7 +29,7 @@ from .serializers import (
     CustomTokenObtainSerializer,
     PasswordResetSerializer,
     ChangePasswordSerializer,
-    PasswordResetDoneSerializer,
+    ResetPasswordCompleteSerializer,
 )
 
 User = get_user_model()  # User model
@@ -82,7 +87,7 @@ class CustomLogoutToken(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainSerializer
 
-
+# Changing password when user is authenticated 
 class ChangePasswordGenericApiView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
     model = get_user_model()
@@ -108,9 +113,16 @@ class ResetPasswordGenericApiView(generics.GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
+        token = self.get_token_for_user(user)
+        current_site = get_current_site(request)
+        relative_link = reverse("accounts:api-v1:password_confirm",kwargs={'token':token})
         message = EmailMessage(
             "email/reset-password.tpl",
-            {"user": user.username, "token": self.get_token_for_user(user)},
+            {
+            "user": user.username,
+            "token": token,
+            "current_site":"http://"+str(current_site)+str(relative_link),
+            },
             "mrrahbarnia@gmail.com",
             to=[user.email],
         )
@@ -124,47 +136,44 @@ class ResetPasswordGenericApiView(generics.GenericAPIView):
         return str(refresh)
 
 
-class ResetPasswordConfirmationGenericApiView(generics.GenericAPIView):
-    serializer_class = PasswordResetDoneSerializer
+class ResetPasswordCheckTokenApiView(generics.GenericAPIView):
+    serializer_class = ResetPasswordCompleteSerializer
 
-    def get_queryset(self):
-        token = self.request.parser_context.get("kwargs").get("token")
+    def get(self, request, *args, **kwargs):
+        token = self.request.parser_context.get('kwargs').get('token')
         try:
-            token = jwt.decode(
+            jwt_token = jwt.decode(
                 token, config("SECRET_KEY"), algorithms=["HS256"]
             )
         except InvalidSignatureError:
             return Response(
                 {
-                    "detail": "The token is not valid,please get a new link with {}"
-                }
+                    "detail": "The token is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST
             )
-        user = User.objects.filter(id=token.get("user_id")).first()
-        return user
-
-    def get(self, request, *args, **kwargs):
-        user = self.get_queryset()
+        except ExpiredSignatureError:
+            return Response(
+                {
+                    'detail':'The token has been expired.'},
+                    status=status.HTTP_400_BAD_REQUEST
+            )
+        user = User.objects.filter(id=jwt_token.get('user_id')).first()
         if not user:
             return Response(
                 {"detail": "There isn't any user with this token."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(
-            {"detail": "Token is valid,Please Enter your new password."}
+            {"detail": "Token is valid.",
+            "token":jwt_token}
         )
 
     def post(self, request, *args, **kwargs):
-        user = self.get_queryset()
-        if not user:
-            return Response(
-                {"detail": "There isn't any user with this token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
-        new_password = serializer.validated_data("new_password")
+        new_password = serializer.validated_data['new_password']
         user.set_password(new_password)
         user.save()
         return Response({"detail": "Your password reseted successfully"})

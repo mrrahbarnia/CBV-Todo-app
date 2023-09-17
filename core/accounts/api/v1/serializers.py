@@ -6,6 +6,14 @@ from rest_framework import serializers
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+# import jwt
+# from jwt.exceptions import (
+#     InvalidSignatureError,
+#     ExpiredSignatureError
+# )
+
+# from decouple import config
+
 User = get_user_model()
 
 # Serializer for registration by getting username,password and confirmation password 
@@ -94,7 +102,7 @@ class PasswordResetSerializer(serializers.Serializer):
         )
 
 
-class PasswordResetDoneSerializer(serializers.Serializer):
+class ResetPasswordCompleteSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     new_password1 = serializers.CharField(required=True, write_only=True)
 
