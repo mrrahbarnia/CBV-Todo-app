@@ -48,7 +48,7 @@ urlpatterns = [
     ),
     path(
         "reset-password/<str:token>",
-        views.ResetPasswordConfirmationGenericApiView.as_view(),
+        views.ResetPasswordCheckTokenApiView.as_view(),
         name="password_confirm",
-    ),
+    )
 ]
