@@ -43,12 +43,17 @@ urlpatterns = [
     # ============= Reset Password ============= #
     path(
         "reset-password/",
-        views.ResetPasswordGenericApiView.as_view(),
-        name="password_reset",
+        views.PasswordResetRequestEmailGenericApiView.as_view(),
+        name="reset-password-request",
     ),
     path(
-        "reset-password/<str:token>",
-        views.ResetPasswordCheckTokenApiView.as_view(),
-        name="password_confirm",
+        "reset-password/validate-token/",
+        views.PasswordResetTokenValidateGenericApiView.as_view(),
+        name="reset-password-validate",
+    ),
+    path(
+        "reset-password/set-password/",
+        views.PasswordResetSetNewGenericApiView.as_view(),
+        name="reset-password-confirm"
     )
 ]
