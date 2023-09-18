@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 
+from rest_framework import mixins
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,22 +15,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-import jwt
-from jwt.exceptions import (
-    InvalidSignatureError,
-    ExpiredSignatureError
-)
-
 from mail_templated import EmailMessage
-from decouple import config
 
 from ..utils import EmailThread
 from .serializers import (
     RegistrationSerializer,
     CustomTokenObtainSerializer,
-    PasswordResetSerializer,
+    PasswordResetRequestEmailSerializer,
     ChangePasswordSerializer,
-    ResetPasswordCompleteSerializer,
+    SetNewPasswordSerializer,
+    PasswordResetTokenVerificationSerializer,
 )
 
 User = get_user_model()  # User model
@@ -104,76 +99,49 @@ class ChangePasswordGenericApiView(generics.GenericAPIView):
         )
 
 
-class ResetPasswordGenericApiView(generics.GenericAPIView):
-    serializer_class = PasswordResetSerializer
+class PasswordResetRequestEmailGenericApiView(generics.GenericAPIView):
+    serializer_class = PasswordResetRequestEmailSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data, context={"request": request}
-        )
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
-        token = self.get_token_for_user(user)
-        current_site = get_current_site(request)
-        relative_link = reverse("accounts:api-v1:password_confirm",kwargs={'token':token})
+        token = RefreshToken.for_user(user).access_token
+        current_site = get_current_site(
+            request=request).domain
+        relative_link = "/accounts/reset-password"
+        absurl = 'http://'+current_site+relative_link+"/?token="+str(token)
         message = EmailMessage(
             "email/reset-password.tpl",
             {
             "user": user.username,
             "token": token,
-            "current_site":"http://"+str(current_site)+str(relative_link),
+            "link":absurl,
+            "site":current_site,
             },
             "mrrahbarnia@gmail.com",
             to=[user.email],
         )
         EmailThread(message).start()
         return Response(
-            {"detail": "The verification email sent to {}".format(user.email)}
+            {"detail": "The verification email sent to {}".format(user.email)},status=status.HTTP_200_OK
         )
 
-    def get_token_for_user(swlf, user):
-        refresh = RefreshToken.for_user(user)
-        return str(refresh)
 
-
-class ResetPasswordCheckTokenApiView(generics.GenericAPIView):
-    serializer_class = ResetPasswordCompleteSerializer
-
-    def get(self, request, *args, **kwargs):
-        token = self.request.parser_context.get('kwargs').get('token')
-        try:
-            jwt_token = jwt.decode(
-                token, config("SECRET_KEY"), algorithms=["HS256"]
-            )
-        except InvalidSignatureError:
-            return Response(
-                {
-                    "detail": "The token is not valid."},
-                    status=status.HTTP_400_BAD_REQUEST
-            )
-        except ExpiredSignatureError:
-            return Response(
-                {
-                    'detail':'The token has been expired.'},
-                    status=status.HTTP_400_BAD_REQUEST
-            )
-        user = User.objects.filter(id=jwt_token.get('user_id')).first()
-        if not user:
-            return Response(
-                {"detail": "There isn't any user with this token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return Response(
-            {"detail": "Token is valid.",
-            "token":jwt_token}
-        )
+class PasswordResetTokenValidateGenericApiView(mixins.RetrieveModelMixin,generics.GenericAPIView):
+    serializer_class = PasswordResetTokenVerificationSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(
-            data=request.data, context={"request": request}
-        )
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_password = serializer.validated_data['new_password']
-        user.set_password(new_password)
-        user.save()
-        return Response({"detail": "Your password reseted successfully"})
+
+        return Response({"detail":"Token is valid"},status=status.HTTP_200_OK)
+
+
+class PasswordResetSetNewGenericApiView(generics.GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+
+    def patch(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({'detail': 'Password reset successfully'}, status=status.HTTP_200_OK)

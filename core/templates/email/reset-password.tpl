@@ -7,7 +7,8 @@ Activation
 {% block html %}
 <h1>Hello {{user}}</h1>
 
-<a href="{{current_site}}">Click Here</a>
+<p>Please click on the link below to set a new password</p>
+<a href="{{link}}">Click Here</a>
 
 
 {% endblock %}
