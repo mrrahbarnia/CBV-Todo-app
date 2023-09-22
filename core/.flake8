@@ -11,4 +11,5 @@ exclude =
     settings.py,
     __init__
     tests.py
+    test
 

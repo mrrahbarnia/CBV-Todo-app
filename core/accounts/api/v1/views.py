@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
 
 from rest_framework import mixins
 from rest_framework import generics, status
@@ -30,7 +29,8 @@ from .serializers import (
 User = get_user_model()  # User model
 
 
-# This class used for registrating and there is a signal for creating token just after registration
+# This class used for registrating and there is a
+# signal for creating token just after registration
 class RegistrationGenericApiView(generics.GenericAPIView):
     serializer_class = RegistrationSerializer
 
@@ -41,9 +41,7 @@ class RegistrationGenericApiView(generics.GenericAPIView):
         serialzier.is_valid(raise_exception=True)
         serialzier.save()
         username = serialzier.validated_data["username"]
-        return Response(
-            {"username": username}, status=status.HTTP_201_CREATED
-        )
+        return Response({"username": username}, status=status.HTTP_201_CREATED)
 
     @receiver(post_save, sender=User)
     def create_auth_token(sender, instance, created, **kwargs):
@@ -82,7 +80,8 @@ class CustomLogoutToken(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainSerializer
 
-# Changing password when user is authenticated 
+
+# Changing password when user is authenticated
 class ChangePasswordGenericApiView(generics.GenericAPIView):
     serializer_class = ChangePasswordSerializer
     model = get_user_model()
@@ -107,35 +106,41 @@ class PasswordResetRequestEmailGenericApiView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         token = RefreshToken.for_user(user).access_token
-        current_site = get_current_site(
-            request=request).domain
+        current_site = get_current_site(request=request).domain
         relative_link = "/accounts/reset-password"
-        absurl = 'http://'+current_site+relative_link+"/?token="+str(token)
+        absurl = (
+            "http://" + current_site + relative_link +
+            "/?token=" + str(token)
+            )
         message = EmailMessage(
             "email/reset-password.tpl",
             {
-            "user": user.username,
-            "token": token,
-            "link":absurl,
-            "site":current_site,
+                "user": user.username,
+                "token": token,
+                "link": absurl,
+                "site": current_site,
             },
             "mrrahbarnia@gmail.com",
             to=[user.email],
         )
         EmailThread(message).start()
         return Response(
-            {"detail": "The verification email sent to {}".format(user.email)},status=status.HTTP_200_OK
+            {"detail": "The verification email sent to {}".format(user.email)},
+            status=status.HTTP_200_OK,
         )
 
 
-class PasswordResetTokenValidateGenericApiView(mixins.RetrieveModelMixin,generics.GenericAPIView):
+class PasswordResetTokenValidateGenericApiView(
+    mixins.RetrieveModelMixin, generics.GenericAPIView
+):
     serializer_class = PasswordResetTokenVerificationSerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        return Response({"detail":"Token is valid"},status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Token is valid"}, status=status.HTTP_200_OK)
 
 
 class PasswordResetSetNewGenericApiView(generics.GenericAPIView):
@@ -144,4 +149,7 @@ class PasswordResetSetNewGenericApiView(generics.GenericAPIView):
     def patch(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({'detail': 'Password reset successfully'}, status=status.HTTP_200_OK)
+        return Response(
+            {"detail": "Password reset successfully"},
+            status=status.HTTP_200_OK
+        )

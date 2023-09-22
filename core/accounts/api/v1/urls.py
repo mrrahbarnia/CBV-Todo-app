@@ -17,9 +17,7 @@ urlpatterns = [
         name="registration",
     ),
     # ============= AuthToken Login/Logout ============= #
-    path(
-        "login/token/", views.CustomLoginToken.as_view(), name="login-token"
-    ),
+    path("login/token/", views.CustomLoginToken.as_view(), name="login-token"),
     path(
         "logout/token/",
         views.CustomLogoutToken.as_view(),
@@ -54,6 +52,6 @@ urlpatterns = [
     path(
         "reset-password/set-password/",
         views.PasswordResetSetNewGenericApiView.as_view(),
-        name="reset-password-confirm"
-    )
+        name="reset-password-confirm",
+    ),
 ]
