@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "rest_framework.authtoken",
     "mail_templated",
+    "corsheaders",
 ]
 
 # Django-crispy-forms configuration
@@ -63,6 +64,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -165,3 +167,7 @@ EMAIL_HOST = "smtp4dev"
 EMAIL_HOST_USER = ""
 EMAIL_HOST_PASSWORD = ""
 EMAIL_PORT = 25
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+
