@@ -5,11 +5,20 @@ from django.utils.text import Truncator
 # My user model
 user = get_user_model()
 
+complete_choices = [
+    ("complete", "complete"),
+    ("pending", "pending")
+]
+
 
 # ============= This class defines the todo model attributes ============= #
 class Todo(models.Model):
+
     user = models.ForeignKey(user, on_delete=models.CASCADE)
     task = models.CharField(max_length=1000, unique=True)
+    complete = models.CharField(
+        max_length=8, choices=complete_choices, default='pending'
+        )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
