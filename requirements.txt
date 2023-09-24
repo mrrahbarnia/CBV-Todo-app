@@ -4,6 +4,7 @@ crispy-bootstrap5
 python-decouple
 djangorestframework
 markdown
+faker
 django-filter
 drf-yasg[validation]
 djangorestframework-simplejwt
@@ -13,5 +14,4 @@ black
 flake8
 pytest
 pytest-django
-faker
 django-cors-headers
