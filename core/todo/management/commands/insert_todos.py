@@ -25,7 +25,7 @@ class Command(BaseCommand):
             password='T13431344'
         )
 
-        for _ in range(5):
+        for _ in range(10):
             Todo.objects.create(
                 user=user,
                 task=self.fake.paragraph(nb_sentences=1),

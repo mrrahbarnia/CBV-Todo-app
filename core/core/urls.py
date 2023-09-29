@@ -34,6 +34,8 @@ urlpatterns = [
          name="todo-delete"),
     # ============= This url is for updating todos ============= #
     path("<int:pk>/edit/", views.UpdateTodoView.as_view(), name="todo-edit"),
+    # ============= This url used for weather condition ============= #
+    path("weather/", views.open_weather, name="weather"),
     # This url used for login/logout cause we are gonna use browsable api
     path("api-auth/", include("rest_framework.urls")),
     # ============= This url includes todo API urls ============= #

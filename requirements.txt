@@ -7,7 +7,6 @@ markdown
 django-filter
 drf-yasg[validation]
 djangorestframework-simplejwt
-django-rest-passwordreset
 django-mail-templated
 black
 flake8
@@ -15,3 +14,6 @@ pytest
 pytest-django
 faker
 django-cors-headers
+redis
+requests
+

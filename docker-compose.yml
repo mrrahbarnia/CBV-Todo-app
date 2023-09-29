@@ -1,7 +1,25 @@
 version: "3.9"
 
 services:
+
+  # rabbitmq:
+  #   image: rabbitmq:management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - 5672:5672
+  #     - 15672:15672
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning
+
   backend:
+    depends_on:
+      - redis
     build: .
     ports:
       - "8000:8000"
@@ -10,8 +28,20 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     container_name: backend
     environment:
-      - SECRET_KEY='django-insecure-=)e5p&s%wij9s%=dkd3l0)vi^zcy7s-8@c)(l5&11nijse#^(!'
+      - SECRET_KEY=test
       - DEBUG=True
+
+  # worker:
+  #   depends_on:
+  #     - redis
+  #     - backend
+  #     # - rabbitmq
+  #   build: .
+  #   container_name: celery
+  #   command: celery -A core worker -l INFO
+  #   volumes:
+  #     - ./core:/app
+
 
   smtp4dev:
       image: rnwood/smtp4dev:v3
